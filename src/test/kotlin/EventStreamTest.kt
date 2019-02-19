@@ -59,4 +59,19 @@ class EventStreamTest {
         assert(stream.last() == "test")
         assert(logMessages.size == 1)
     }
+
+    @Test
+    fun pauseStream(){
+        val stream = EventStream<Int>()
+        val events = mutableListOf<Int>()
+        val listener = stream.listen { events.add(it) }
+        stream.dispatch(1)
+        assert(events.size == 1)
+        listener.pause()
+        stream.dispatch(2)
+        assert(events.size == 1)
+        listener.resume()
+        stream.dispatch(3)
+        assert(events.size == 2)
+    }
 }
