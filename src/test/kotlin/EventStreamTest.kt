@@ -1,12 +1,14 @@
 import org.junit.Test
 import ru.dmansurov.AsyncEventStreamDispatcher
 import ru.dmansurov.EventStream
+import ru.dmansurov.EventStreamDispatcher
 import java.util.concurrent.Executors
 
 data class LogEvent(val level: String, val message: String)
 
 class Logger {
-    val stream = EventStream<LogEvent>(AsyncEventStreamDispatcher(Executors.newSingleThreadExecutor()))
+    val stream = EventStream<LogEvent>()
+    private val dispatcher = AsyncEventStreamDispatcher(Executors.newSingleThreadExecutor(), stream)
 
     init {
         stream.listen {
@@ -15,7 +17,7 @@ class Logger {
     }
 
     fun info(message: String) {
-        stream.dispatch(LogEvent("info", message))
+        dispatcher.dispatch(LogEvent("info", message))
     }
 }
 
@@ -24,13 +26,14 @@ class EventStreamTest {
     @Test
     fun EventStreamTest() {
         val stream = EventStream<String>()
+        val dispatcher = EventStreamDispatcher(stream)
         val received = mutableListOf<String>()
         val subscription = stream
             .where { it == "event2" }
             .map { it + it }
             .listen { received.add(it) }
-        stream.dispatch("event1")
-        stream.dispatch("event2")
+        dispatcher.dispatch("event1")
+        dispatcher.dispatch("event2")
         assert(received.size == 1)
         assert(received.first() == "event2event2")
         var subCleaned = false
@@ -39,7 +42,7 @@ class EventStreamTest {
         }
         subscription.cancel()
         assert(subCleaned)
-        stream.dispatch("event2")
+        dispatcher.dispatch("event2")
         assert(received.size == 1)
     }
 
@@ -56,22 +59,22 @@ class EventStreamTest {
         logger.info("test")
         assert(logMessages.size == 0)
         Thread.sleep(10)
-        assert(stream.last() == "test")
         assert(logMessages.size == 1)
     }
 
     @Test
     fun pauseStream(){
         val stream = EventStream<Int>()
+        val dispatcher = EventStreamDispatcher(stream)
         val events = mutableListOf<Int>()
         val listener = stream.listen { events.add(it) }
-        stream.dispatch(1)
+        dispatcher.dispatch(1)
         assert(events.size == 1)
         listener.pause()
-        stream.dispatch(2)
+        dispatcher.dispatch(2)
         assert(events.size == 1)
         listener.resume()
-        stream.dispatch(3)
+        dispatcher.dispatch(3)
         assert(events.size == 2)
     }
 }

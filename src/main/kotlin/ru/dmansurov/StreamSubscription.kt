@@ -1,7 +1,6 @@
 package ru.dmansurov
 
 class StreamSubscription<T> internal constructor(
-    private val dispatcher: EventStreamDispatcher,
     private val onEvent: (T) -> Unit,
     private val onCancel: (StreamSubscription<T>) -> Unit
 ) {
@@ -17,7 +16,7 @@ class StreamSubscription<T> internal constructor(
 
     internal fun notify(e: T) {
         if (isActive)
-            dispatcher.dispatch { onEvent(e) }
+            onEvent(e)
     }
 
     fun cancel() {

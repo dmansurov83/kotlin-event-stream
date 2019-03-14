@@ -2,20 +2,14 @@ package ru.dmansurov
 
 import java.util.concurrent.Executor
 
-interface EventStreamDispatcher {
-    fun dispatch(call: () -> Unit)
-}
-
-class SyncEventStreamDispatcher : EventStreamDispatcher {
-    override fun dispatch(call: () -> Unit) {
-        call()
+open class EventStreamDispatcher<T>(protected val stream: EventStream<T>) {
+    open fun dispatch(event: T){
+        stream.dispatch(event)
     }
 }
 
-class AsyncEventStreamDispatcher(private val executor: Executor) : EventStreamDispatcher {
-    override fun dispatch(call: () -> Unit) {
-        executor.execute {
-            call()
-        }
+class AsyncEventStreamDispatcher<T>(private val executor: Executor, stream: EventStream<T>) : EventStreamDispatcher<T>(stream) {
+    override fun dispatch(event: T){
+        executor.execute { stream.dispatch(event) }
     }
 }
