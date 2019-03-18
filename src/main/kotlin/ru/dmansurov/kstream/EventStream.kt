@@ -1,4 +1,4 @@
-package ru.dmansurov
+package ru.dmansurov.kstream
 
 open class EventStream<T>() {
     private val listeners = mutableListOf<StreamSubscription<T>>()

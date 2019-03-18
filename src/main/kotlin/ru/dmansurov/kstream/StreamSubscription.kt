@@ -1,4 +1,4 @@
-package ru.dmansurov
+package ru.dmansurov.kstream
 
 class StreamSubscription<T> internal constructor(
     private val onEvent: (T) -> Unit,

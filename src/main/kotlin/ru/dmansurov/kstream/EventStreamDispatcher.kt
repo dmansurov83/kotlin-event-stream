@@ -1,4 +1,4 @@
-package ru.dmansurov
+package ru.dmansurov.kstream
 
 import java.util.concurrent.Executor
 

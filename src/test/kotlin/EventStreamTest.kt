@@ -1,14 +1,15 @@
 import org.junit.Test
-import ru.dmansurov.AsyncEventStreamDispatcher
-import ru.dmansurov.EventStream
-import ru.dmansurov.EventStreamDispatcher
+import ru.dmansurov.kstream.AsyncEventStreamDispatcher
+import ru.dmansurov.kstream.EventStream
+import ru.dmansurov.kstream.EventStreamDispatcher
 import java.util.concurrent.Executors
 
 data class LogEvent(val level: String, val message: String)
 
 class Logger {
     val stream = EventStream<LogEvent>()
-    private val dispatcher = AsyncEventStreamDispatcher(Executors.newSingleThreadExecutor(), stream)
+    private val dispatcher =
+        AsyncEventStreamDispatcher(Executors.newSingleThreadExecutor(), stream)
 
     init {
         stream.listen {
