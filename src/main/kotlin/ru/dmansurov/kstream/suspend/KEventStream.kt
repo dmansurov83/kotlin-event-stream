@@ -1,16 +1,18 @@
-package ru.dmansurov.kstream
+package ru.dmansurov.kstream.suspend
 
-open class EventStream<T>() {
-    internal val listeners = mutableListOf<StreamSubscription<T>>()
+open class KEventStream<T>() {
+    internal val listeners = mutableListOf<KStreamSubscription<T>>()
 
     internal var onLastListenerRemoved: () -> Unit = {}
 
-    internal fun dispatch(event: T) {
-
+    internal suspend fun dispatch(event: T) {
+        listeners.forEach {
+            it.notify(event)
+        }
     }
 
-    fun listen(onEvent: (T) -> Unit): StreamSubscription<T> {
-        val sub = StreamSubscription(onEvent = onEvent, onCancel = {
+    fun listen(onEvent: suspend (T) -> Unit): KStreamSubscription<T> {
+        val sub = KStreamSubscription(onEvent = onEvent, onCancel = {
             listeners.remove(it)
             if (listeners.isEmpty()) {
                 onLastListenerRemoved()
@@ -20,8 +22,8 @@ open class EventStream<T>() {
         return sub
     }
 
-    fun where(predicate: (T) -> Boolean): EventStream<T> {
-        val stream = EventStream<T>()
+    fun where(predicate: (T) -> Boolean): KEventStream<T> {
+        val stream = KEventStream<T>()
         val subscription = listen {
             if (predicate(it)) stream.dispatch(it)
         }
@@ -31,8 +33,8 @@ open class EventStream<T>() {
         return stream
     }
 
-    fun <T2> map(mapper: (T) -> T2): EventStream<T2> {
-        val stream = EventStream<T2>()
+    fun <T2> map(mapper: (T) -> T2): KEventStream<T2> {
+        val stream = KEventStream<T2>()
         val subscription = listen {
             stream.dispatch(mapper(it))
         }
