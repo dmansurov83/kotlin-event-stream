@@ -86,4 +86,19 @@ class KEventStreamTest {
             assert(events.size == 2)
         }
     }
+
+    @Test
+    fun whereIsInstance(){
+        runBlocking {
+            val stream = KEventStream<Any>()
+            val dispatcher = KEventStreamDispatcher(stream)
+            val events = mutableListOf<Int>()
+            val listener = stream.mapNotNull { it as? Int }
+                .listen { events.add(it) }
+            dispatcher.dispatch("string")
+            dispatcher.dispatch(1)
+            assert(events.size == 1)
+            listener.cancel()
+        }
+    }
 }

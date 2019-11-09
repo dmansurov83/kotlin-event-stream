@@ -41,6 +41,18 @@ open class EventStream<T>() {
         }
         return stream
     }
+
+    fun <T2> mapNotNull(mapper: (T) -> T2?): EventStream<T2> {
+        val stream = EventStream<T2>()
+        val subscription = listen {
+            mapper(it)?.let { nn -> stream.dispatch(nn) }
+        }
+        stream.onLastListenerRemoved = {
+            subscription.cancel()
+        }
+        return stream
+    }
 }
+
 
 
